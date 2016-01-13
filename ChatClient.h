@@ -8,11 +8,13 @@
 #ifndef CHATCLIENT_H_
 #define CHATCLIENT_H_
 
+#include "ClientThreadPool.h"
+
 #include "Socket.h"
 
 class ChatClient
 {
-
+	ClientThreadPool _workPool;
 	Socket* _serverSocket;
 
 public:

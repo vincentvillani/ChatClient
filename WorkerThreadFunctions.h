@@ -11,7 +11,7 @@
 #include "Socket.h"
 #include <stdint.h>
 
-void sendMessageToServer(Socket* serverSocket, char* message, uint32_t messageLength);
+void SendMessageToServer(Socket* serverSocket, char* message, uint32_t messageLength);
 
 
 

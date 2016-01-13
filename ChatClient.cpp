@@ -10,8 +10,12 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <functional>
+#include <stdlib.h>
 
 #include "Network.h"
+#include "WorkerThreadFunctions.h"
+#include "Socket.h"
 
 #define SERVER_PORT_STRING "3490"
 
@@ -81,12 +85,24 @@ ChatClient::ChatClient()
 		exit(1);
 	}
 
+	//Make a copy of the socket address before setting it
+	uint32_t copiedSocketAddressSize = sizeof(currentAddressInfo->ai_addr);
+	SOCKADDR* copiedSocketAddress = (SOCKADDR*)malloc(sizeof(copiedSocketAddressSize));
+	memcpy(copiedSocketAddress, currentAddressInfo->ai_addr, copiedSocketAddressSize);
+
+	_serverSocket = new Socket(serverSocketHandle, copiedSocketAddress);
+
 	freeaddrinfo(addressResults);
 
-	_serverSocket = new Socket(serverSocketHandle, currentAddressInfo->ai_addr);
+
 
 
 	printf("Successfully connected to server!\n");
+
+	char* helloWorld = "Hello world\n";
+
+	_workPool.addToWorkBuffer(std::bind(SendMessageToServer, _serverSocket, helloWorld, 13));
+	_workPool.debugTest();
 
 }
 
