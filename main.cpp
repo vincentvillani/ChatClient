@@ -10,6 +10,9 @@
 
 #include "ChatClient.h"
 
+//TODO: Handle partial sends and receives
+//TODO: Alert the main thread when an error on read or write have been
+
 int main()
 {
 	ChatClient client;

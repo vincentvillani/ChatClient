@@ -34,7 +34,8 @@ public:
 
 	int handle;
 	SOCKADDR* address;
-	std::mutex mutex;
+	std::mutex writeMutex;
+	std::mutex readMutex;
 };
 
 #endif /* SOCKET_H_ */

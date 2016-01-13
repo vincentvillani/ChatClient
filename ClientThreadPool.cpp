@@ -7,12 +7,12 @@
 
 #include "ClientThreadPool.h"
 
-ClientThreadPool::ClientThreadPool() {
-	// TODO Auto-generated constructor stub
+ClientThreadPool::ClientThreadPool()
+{
 
 }
 
-ClientThreadPool::~ClientThreadPool() {
-	// TODO Auto-generated destructor stub
+ClientThreadPool::~ClientThreadPool()
+{
 }
 

@@ -8,10 +8,13 @@
 #ifndef CLIENTTHREADPOOL_H_
 #define CLIENTTHREADPOOL_H_
 
+#include <vector>
+
 class ClientThreadPool
 {
 
 public:
+
 	ClientThreadPool();
 	virtual ~ClientThreadPool();
 };
