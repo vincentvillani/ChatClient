@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <functional>
 #include <stdlib.h>
+#include <thread>
+#include <chrono>
 
 #include "Network.h"
 #include "WorkerThreadFunctions.h"
@@ -97,13 +99,13 @@ ChatClient::ChatClient()
 
 
 
-	printf("Successfully connected to server!\n");
+	//printf("Successfully connected to server!\n");
 
 	//TODO: REMOVE THIS DEBUG STUFF
 	char* username = "Vincent";
 	char* message = "Wow this worked!?";
-	uint32_t usernameLength = strlen(username);
-	uint32_t messageLength = strlen(message);
+	uint32_t usernameLength = strlen(username) + 1;
+	uint32_t messageLength = strlen(message) + 1;
 
 	//This length does not include this uint32_t
 	uint32_t totalMessageLength = sizeof(uint32_t) * 2 + usernameLength + messageLength;
@@ -120,9 +122,22 @@ ChatClient::ChatClient()
 	memcpy(completeMessage + (sizeof(uint32_t) * 2) + usernameLength, &messageLength, sizeof(uint32_t));
 	memcpy(completeMessage + (sizeof(uint32_t) * 3) + usernameLength, message, messageLength);
 
+	printf("TotalLength: %u\n", (uint32_t) (*completeMessage));
+	printf("usernameLength: %u\n", (uint32_t) *(completeMessage + sizeof(uint32_t)));
+
+	printf("message: %s\n", completeMessage);
 
 	_workPool.addToWorkBuffer(std::bind(SendMessageToServer, _serverSocket, completeMessage, totalMessageLength + sizeof(uint32_t)));
 	_workPool.debugTest();
+
+
+	_workPool.addToWorkBuffer(std::bind(SendMessageToServer, _serverSocket, completeMessage, totalMessageLength + sizeof(uint32_t)));
+	_workPool.debugTest();
+
+	_workPool.addToWorkBuffer(std::bind(SendMessageToServer, _serverSocket, completeMessage, totalMessageLength + sizeof(uint32_t)));
+	_workPool.debugTest();
+
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 
 }
 

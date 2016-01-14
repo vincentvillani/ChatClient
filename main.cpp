@@ -12,6 +12,7 @@
 
 //TODO: Handle partial sends and receives
 //TODO: Alert the main thread when an error on read or write have been
+//TODO: Improve the way data is sent and received from the server
 
 int main()
 {

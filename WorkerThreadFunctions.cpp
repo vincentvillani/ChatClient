@@ -23,10 +23,10 @@ void SendMessageToServer(Socket* serverSocket, char* message, uint32_t messageLe
 	//TODO: Handle this error
 	if(returnValue == -1)
 	{
-		printf("Something has gone wrong...");
+		printf("Something has gone wrong...\n");
 	}
 
-	printf("Message sent...\n");
+	//printf("Message sent...\n");
 
 }
 
