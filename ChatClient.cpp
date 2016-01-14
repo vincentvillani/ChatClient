@@ -99,9 +99,29 @@ ChatClient::ChatClient()
 
 	printf("Successfully connected to server!\n");
 
-	char* helloWorld = "Hello world\n";
+	//TODO: REMOVE THIS DEBUG STUFF
+	char* username = "Vincent";
+	char* message = "Wow this worked!?";
+	uint32_t usernameLength = strlen(username);
+	uint32_t messageLength = strlen(message);
 
-	_workPool.addToWorkBuffer(std::bind(SendMessageToServer, _serverSocket, helloWorld, 13));
+	//This length does not include this uint32_t
+	uint32_t totalMessageLength = sizeof(uint32_t) * 2 + usernameLength + messageLength;
+
+	//Allocate enough space to store the whole message
+	char* completeMessage = (char*)malloc(totalMessageLength + sizeof(uint32_t));
+
+	//Write the data into the completeMessageBuffer
+	memcpy(completeMessage, &totalMessageLength, sizeof(uint32_t));
+
+	memcpy(completeMessage + sizeof(uint32_t), &usernameLength, sizeof(uint32_t));
+	memcpy(completeMessage + sizeof(uint32_t) * 2, username, usernameLength);
+
+	memcpy(completeMessage + (sizeof(uint32_t) * 2) + usernameLength, &messageLength, sizeof(uint32_t));
+	memcpy(completeMessage + (sizeof(uint32_t) * 3) + usernameLength, message, messageLength);
+
+
+	_workPool.addToWorkBuffer(std::bind(SendMessageToServer, _serverSocket, completeMessage, totalMessageLength + sizeof(uint32_t)));
 	_workPool.debugTest();
 
 }
