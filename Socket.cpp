@@ -1,7 +1,7 @@
 /*
  * Socket.cpp
  *
- *  Created on: 13 Jan 2016
+ *  Created on: 7 Jan 2016
  *      Author: vincent
  */
 
@@ -22,5 +22,4 @@ Socket::~Socket()
 	NetworkSocketClose(handle);
 	free(address);
 }
-
 

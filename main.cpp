@@ -7,15 +7,44 @@
 
 
 #include <stdio.h>
+#include <thread>
 
-#include "ChatClient.h"
+#include "ClientThreadFunctions.h"
+#include "NetworkThreadFunctions.h"
+#include "ClientData.h"
+#include "NetworkData.h"
+#include "MasterMailbox.h"
 
 //TODO: Handle partial sends and receives
 //TODO: Alert the main thread when an error on read or write have been
 
-int main()
+
+//This is the client thread
+int main(int argc, const char* argv[])
 {
-	ChatClient client;
+	if(argc < 3)
+	{
+		printf("Usage: IPAddress Username\n");
+		exit(1);
+	}
+
+	ClientData* clientData = new ClientData(argv[2]);
+	NetworkData* networkData = new NetworkData(argv[2]);
+
+	MasterMailbox* masterMailbox = new MasterMailbox(clientData, networkData);
+
+
+	//Start the networking thread
+	std::thread networkingThread(NetworkThreadMain, networkData, masterMailbox, argv[1]);
+	networkingThread.detach();
+
+
+	ClientThreadMain(clientData, masterMailbox);
+
+
+	delete clientData;
+	delete networkData;
+	delete masterMailbox;
 
 	return 0;
 }
