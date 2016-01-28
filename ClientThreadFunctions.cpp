@@ -16,6 +16,7 @@
 #include <functional>
 
 #include <ncurses.h>
+#include <string.h>
 
 
 static void DoAllWork(ClientData* clientData, MasterMailbox* mailbox)
@@ -42,6 +43,38 @@ static void DoAllWork(ClientData* clientData, MasterMailbox* mailbox)
 void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 {
 
+	initscr();
+	start_color();
+
+
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+
+	printw("Wow this is a colour pair, wowowowow");
+	mvchgat(0, 0, -1, A_BLINK, 1, NULL);
+
+	refresh();
+	getch();
+	endwin();
+
+	/*
+	char* message = "Enter a string: ";
+	char str[80];
+	int row, col;
+
+	initscr();
+	raw();
+	getmaxyx(stdscr, row, col);
+	attron(A_BOLD);
+
+	mvprintw(row / 2, (col - strlen(message)) / 2, "%s", message); //print the message at the center of the screen
+
+	getstr(str);
+	mvprintw(LINES - 2, 0, "You entered: %s", str);
+	getch();
+	endwin();
+	*/
+
+	/*
 	int ch;
 	int rowNum, columnNum;
 
@@ -60,7 +93,7 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 	refresh(); //render everything in stdscr buffer to the screen
 	getch(); //wait for user input
 	endwin(); //exit curses mode
-
+	 */
 
 	/*
 	printw("I am a hacker"); //write to a buffer
