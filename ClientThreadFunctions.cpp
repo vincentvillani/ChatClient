@@ -10,12 +10,13 @@
 
 #include "Network.h"
 #include "MasterMailbox.h"
+#include "UIFunctions.h"
 
 #include <string.h>
 #include <chrono>
 #include <functional>
 
-#include <ncurses.h>
+
 #include <string.h>
 
 
@@ -43,18 +44,64 @@ static void DoAllWork(ClientData* clientData, MasterMailbox* mailbox)
 void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 {
 
-	initscr();
-	start_color();
+	UISetup(clientData);
+
+	UIDraw(clientData);
+
+	while(1);
 
 
-	init_pair(1, COLOR_RED, COLOR_BLACK);
+	while(true)
+	{
+		std::unique_lock<std::mutex> workQueueLock(clientData->mutex);
 
+		bool workToDo = clientData->conditionVariable.wait_for(workQueueLock, std::chrono::milliseconds(10), [&]{return clientData->workQueue.size();});
+
+		if(workToDo)
+		{
+			workQueueLock.unlock();
+			DoAllWork(clientData, mailbox);
+		}
+
+		//Check for user input
+		UIUpdate(clientData);
+	}
+
+
+
+	UIShutdown();
+
+}
+
+
+
+void ClientHandleUsernameChanged(ClientData* clientData)
+{
+	printf("Client thread: Username sent to server!\n");
+}
+
+
+/*
+	initscr(); //init ncurses
+	start_color(); //init colours
+
+	//init_color(COLOR_RED, 934, 602, 535);
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+
+
+
+	attron(COLOR_PAIR(1));
+
+	getch()
+
+	//if(can_change_color())
 	printw("Wow this is a colour pair, wowowowow");
-	mvchgat(0, 0, -1, A_BLINK, 1, NULL);
 
 	refresh();
 	getch();
-	endwin();
+	endwin(); //end ncurses
+
+	*/
 
 	/*
 	char* message = "Enter a string: ";
@@ -101,28 +148,3 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 	getch(); //wait for use input
 	endwin(); //End curses mode
 	*/
-
-
-	while(true)
-	{
-		std::unique_lock<std::mutex> workQueueLock(clientData->mutex);
-
-		bool workToDo = clientData->conditionVariable.wait_for(workQueueLock, std::chrono::milliseconds(10), [&]{return clientData->workQueue.size();});
-
-		if(workToDo)
-		{
-			workQueueLock.unlock();
-			DoAllWork(clientData, mailbox);
-		}
-
-	}
-
-
-}
-
-
-
-void ClientHandleUsernameChanged(ClientData* clientData)
-{
-	printf("Client thread: Username sent to server!\n");
-}

@@ -39,7 +39,6 @@ int main(int argc, const char* argv[])
 	//std::thread networkingThread(NetworkThreadMain, networkData, masterMailbox, argv[1]);
 	//networkingThread.detach();
 
-
 	ClientThreadMain(clientData, masterMailbox);
 
 

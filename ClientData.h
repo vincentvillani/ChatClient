@@ -12,6 +12,8 @@
 
 #include <string>
 
+#include "ChatData.h"
+
 class ClientData : public WorkQueue
 {
 
@@ -22,7 +24,7 @@ public:
 	ClientData(std::string username);
 	virtual ~ClientData();
 
-
+	ChatData chatData;
 };
 
 #endif /* CLIENTDATA_H_ */
