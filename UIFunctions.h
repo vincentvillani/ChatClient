@@ -19,7 +19,7 @@ void UIShutdown();
 
 void UIUpdate(ClientData* clientdata);
 
-void UIAddString(ClientData* clientdata, std::string newString);
+void UIAddMessage(ClientData* clientdata, UIMessage* newMessage);
 
 void UIDraw(ClientData* clientdata);
 

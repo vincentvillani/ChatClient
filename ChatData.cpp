@@ -9,7 +9,7 @@
 
 ChatData::ChatData()
 {
-	currentBaseChatIndex = 0;
+	baseViewableRow = 0;
 	maxRow = 0;
 	maxCol = 0;
 }

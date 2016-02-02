@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 
+#include "UIMessage.h"
+
 class ChatData
 {
 public:
@@ -21,8 +23,9 @@ public:
 	int maxRow;
 	int maxCol;
 
-	int currentBaseChatIndex; //Current row number on the screen, starts at 0
-	std::vector<std::string> chatVector;
+	int baseViewableRow; //How many rows away from the last row of the most recent message is the row at the very bottom of the chat section? (ROWS, NOT MESSAGES)
+
+	std::vector<UIMessage*> messageVector;
 
 	std::string currentMessage;
 };

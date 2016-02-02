@@ -48,7 +48,7 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 
 	UIDraw(clientData);
 
-	while(1);
+	//while(1);
 
 
 	while(true)
