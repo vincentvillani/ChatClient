@@ -12,9 +12,14 @@ ChatData::ChatData()
 	baseViewableRow = 0;
 	maxRow = 0;
 	maxCol = 0;
+	totalMessageRows = 0;
 }
 
 ChatData::~ChatData()
 {
+	for(uint32_t i = 0; i < messageVector.size(); ++i)
+	{
+		delete messageVector[i];
+	}
 }
 

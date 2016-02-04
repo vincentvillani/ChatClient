@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 #include "UIMessage.h"
 
@@ -23,10 +24,9 @@ public:
 	int maxRow;
 	int maxCol;
 
-	int baseViewableRow; //How many rows away from the last row of the most recent message is the row at the very bottom of the chat section? (ROWS, NOT MESSAGES)
-
+	uint32_t totalMessageRows;
+	uint32_t baseViewableRow; //How many rows away from the last row of the most recent message is the row at the very bottom of the chat section? (ROWS, NOT MESSAGES)
 	std::vector<UIMessage*> messageVector;
-
 	std::string currentMessage;
 };
 
