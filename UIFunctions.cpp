@@ -98,12 +98,12 @@ void UIUpdate(ClientData* clientdata)
 	}
 	else if(key == KEY_DOWN)
 	{
+		if(clientdata->chatData.baseViewableRow == 0)
+			return;
+
 		clientdata->chatData.baseViewableRow -= 1;
-
-		if(clientdata->chatData.baseViewableRow < 0)
-			clientdata->chatData.baseViewableRow = 0;
-
 		UIDraw(clientdata);
+
 	}
 
 
