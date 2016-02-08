@@ -105,7 +105,7 @@ static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, co
 
 
 	//Send the username along to the server
-	NetworkSendUsername(networkData, mailbox, networkData->username);
+	NetworkThreadSendUsername(networkData, mailbox, networkData->username);
 
 	//printf("Successfully connected to server!\n");
 }
@@ -202,8 +202,26 @@ void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const c
 
 	while(true)
 	{
+
+		std::unique_lock<std::mutex> workQueueLock(networkData->mutex);
+
 		//Is there any work to do?
-		//TODO: Implement this
+		bool workToDo = networkData->conditionVariable.wait_for(workQueueLock, std::chrono::milliseconds(0), [&]{return networkData->workQueue.size();} );
+
+		//Do all the work
+		if(workToDo)
+		{
+			while(networkData->workQueue.size())
+			{
+				std::function<void()> workItem = networkData->workQueue.front();
+				networkData->workQueue.pop();
+				workItem(); //Do the work
+
+			}
+
+			//Release the mutex
+			workQueueLock.unlock();
+		}
 
 		//Do read and write IO
 		PollSocketsAndDoIO(networkData, mailbox);
@@ -212,7 +230,7 @@ void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const c
 
 
 
-void NetworkSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername)
+void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername)
 {
 	//Format the new data to send
 	uint32_t totalMessageLength = sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint8_t) + (newUsername.size() + 1);
@@ -226,8 +244,8 @@ void NetworkSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::
 	char terminator = '\0';
 
 	memcpy(data, &totalMessageLength, sizeof(uint32_t)); //Total message length
-	memcpy(data + 4, &messageType, sizeof(uint16_t)); //message length
-	memcpy(data + 6, &usernameLength, sizeof(uint8_t)); //message length
+	memcpy(data + 4, &messageType, sizeof(uint16_t)); //message type
+	memcpy(data + 6, &usernameLength, sizeof(uint8_t)); //username length
 	memcpy(data + 7, newUsername.c_str(), newUsername.size());
 	memcpy(data + 7 + newUsername.size() + 1, &terminator, 1);
 
@@ -240,6 +258,28 @@ void NetworkSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::
 	//Tell the server that we've sent a message
 	TellClientMessageSent(messageType, mailbox);
 
+}
+
+
+
+void NetworkThreadSendChatMessage(NetworkData* networkData, std::string currentMessage)
+{
+	uint32_t chatMessageLength = currentMessage.size() + 1; //Plus one for null terminator
+	uint32_t totalMessageByteSize = sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint32_t) + chatMessageLength;
+	uint16_t messageType = NETWORK_CHAT_MESSAGE;
+
+	char* data = (char*)malloc(totalMessageByteSize);
+	char terminator = '\0';
+
+	memcpy(data, &totalMessageByteSize, sizeof(uint32_t)); //Total message length
+	memcpy(data + 4, &messageType, sizeof(uint16_t)); //message type
+	memcpy(data + 6, &chatMessageLength, sizeof(uint32_t)); //chat message length
+	memcpy(data + 10, currentMessage.c_str(), currentMessage.size());
+	memcpy(data + 10 + currentMessage.size(), &terminator, sizeof(char));
+
+	//Create a write buffer and add it to the iobuffer queue
+	NetworkWriteBuffer* networkWriteBuffer = new NetworkWriteBuffer(totalMessageByteSize, data, networkData->ioBuffer->socketHandle, messageType);
+	networkData->ioBuffer->writeBufferQueue.push(networkWriteBuffer); //Don't need a mutex, because only the network thread should be using this buffer
 }
 
 

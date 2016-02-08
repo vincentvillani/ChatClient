@@ -15,7 +15,9 @@ class MasterMailbox;
 
 void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const char* ip);
 
-void NetworkSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername);
+void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername);
+
+void NetworkThreadSendChatMessage(NetworkData* networkData, std::string currentMessage);
 
 
 #endif /* NETWORKTHREADFUNCTIONS_H_ */

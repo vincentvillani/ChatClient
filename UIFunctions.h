@@ -9,6 +9,7 @@
 #define UIFUNCTIONS_H_
 
 #include "ClientData.h"
+#include "MasterMailbox.h"
 
 #include <string>
 
@@ -17,7 +18,7 @@
 void UISetup(ClientData* clientdata);
 void UIShutdown();
 
-void UIUpdate(ClientData* clientdata);
+void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox);
 
 void UIAddMessage(ClientData* clientdata, UIMessage* newMessage);
 

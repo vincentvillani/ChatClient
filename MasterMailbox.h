@@ -14,6 +14,8 @@
 #include "ClientThreadFunctions.h"
 #include "NetworkThreadFunctions.h"
 
+#include <string>
+
 
 class MasterMailbox
 {
@@ -26,6 +28,8 @@ public:
 	virtual ~MasterMailbox();
 
 	void NetworkTellServerThreadUsernameUpdated();
+
+	void ClientSendChatMessage(std::string currentMessage);
 
 };
 

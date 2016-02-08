@@ -79,7 +79,7 @@ void UIShutdown()
 }
 
 
-void UIUpdate(ClientData* clientdata)
+void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 {
 
 	int key = getch();
@@ -106,7 +106,9 @@ void UIUpdate(ClientData* clientdata)
 	}
 	else if(key == KEY_ENTER || key == '\n')
 	{
-
+		mailbox->ClientSendChatMessage(clientdata->chatData.currentMessage); //Notify the network thread that we want to send a message
+		clientdata->chatData.currentMessage.clear(); //Clear the string
+		UIDraw(clientdata);
 	}
 	else if(key == KEY_BACKSPACE) //This is a 'current message' character
 	{

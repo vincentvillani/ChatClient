@@ -32,3 +32,15 @@ void MasterMailbox::NetworkTellServerThreadUsernameUpdated()
 	_clientData->conditionVariable.notify_one();
 }
 
+
+void MasterMailbox::ClientSendChatMessage(std::string currentMessage)
+{
+	std::function<void()> functor = std::function<void()>(std::bind(NetworkThreadSendChatMessage, _networkData, currentMessage));
+	{
+		std::lock_guard<std::mutex> workQueueLock(_networkData->mutex);
+		_networkData->workQueue.push(functor);
+	}
+
+	_networkData->conditionVariable.notify_one();
+}
+

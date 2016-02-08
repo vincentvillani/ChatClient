@@ -64,7 +64,7 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 		}
 
 		//Check for user input
-		UIUpdate(clientData);
+		UIUpdate(clientData, mailbox);
 	}
 
 
