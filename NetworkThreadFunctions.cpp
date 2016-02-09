@@ -57,7 +57,7 @@ static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, co
 	ADDRINFO* currentAddressInfo = addressResults;
 	for(; currentAddressInfo != NULL; currentAddressInfo = currentAddressInfo->ai_next)
 	{
-		printf("Hi!\n");
+		//printf("Hi!\n");
 
 		serverSocketHandle = NetworkSocketCreate(currentAddressInfo->ai_family, currentAddressInfo->ai_socktype);
 
@@ -206,7 +206,7 @@ void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const c
 		std::unique_lock<std::mutex> workQueueLock(networkData->mutex);
 
 		//Is there any work to do?
-		bool workToDo = networkData->conditionVariable.wait_for(workQueueLock, std::chrono::milliseconds(0), [&]{return networkData->workQueue.size();} );
+		bool workToDo = networkData->conditionVariable.wait_for(workQueueLock, std::chrono::milliseconds(1), [&]{return networkData->workQueue.size();} );
 
 		//Do all the work
 		if(workToDo)
@@ -233,11 +233,13 @@ void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const c
 void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername)
 {
 	//Format the new data to send
-	uint32_t totalMessageLength = sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint8_t) + (newUsername.size() + 1);
-	uint16_t messageType = NETWORK_USERNAME;
 	uint8_t usernameLength = newUsername.size() + 1;
+	uint16_t messageType = NETWORK_USERNAME;
+	uint32_t totalMessageLength = sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint8_t) + usernameLength;
 
-	printf("Name: %s\n", newUsername.c_str());
+
+
+	//printf("Name: %s\n", newUsername.c_str());
 
 
 	char* data = (char*)malloc(totalMessageLength);
@@ -247,9 +249,9 @@ void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox,
 	memcpy(data + 4, &messageType, sizeof(uint16_t)); //message type
 	memcpy(data + 6, &usernameLength, sizeof(uint8_t)); //username length
 	memcpy(data + 7, newUsername.c_str(), newUsername.size());
-	memcpy(data + 7 + newUsername.size() + 1, &terminator, 1);
+	memcpy(data + 7 + newUsername.size(), &terminator, 1);
 
-	printf("Char name: %s\n", (data + 7));
+	//printf("Char name: %s\n", (data + 7));
 
 	//Create a write buffer and add it to the iobuffer queue
 	NetworkWriteBuffer* networkWriteBuffer = new NetworkWriteBuffer(totalMessageLength, data, networkData->ioBuffer->socketHandle, messageType);
@@ -275,7 +277,7 @@ void NetworkThreadSendChatMessage(NetworkData* networkData, std::string currentM
 	memcpy(data + 4, &messageType, sizeof(uint16_t)); //message type
 	memcpy(data + 6, &chatMessageLength, sizeof(uint32_t)); //chat message length
 	memcpy(data + 10, currentMessage.c_str(), currentMessage.size());
-	memcpy(data + 10 + currentMessage.size(), &terminator, sizeof(char));
+	memcpy(data + 10 + currentMessage.size(), &terminator, 1);
 
 	//Create a write buffer and add it to the iobuffer queue
 	NetworkWriteBuffer* networkWriteBuffer = new NetworkWriteBuffer(totalMessageByteSize, data, networkData->ioBuffer->socketHandle, messageType);
