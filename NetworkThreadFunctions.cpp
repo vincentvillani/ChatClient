@@ -232,6 +232,8 @@ void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const c
 
 void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername)
 {
+	networkData->username = newUsername;
+
 	//Format the new data to send
 	uint8_t usernameLength = newUsername.size() + 1;
 	uint16_t messageType = NETWORK_USERNAME;
@@ -266,18 +268,43 @@ void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox,
 
 void NetworkThreadSendChatMessage(NetworkData* networkData, std::string currentMessage)
 {
+	uint16_t usernameLength = networkData->username.size() + 1; //Plus one for null terminator
 	uint32_t chatMessageLength = currentMessage.size() + 1; //Plus one for null terminator
-	uint32_t totalMessageByteSize = sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint32_t) + chatMessageLength;
 	uint16_t messageType = NETWORK_CHAT_MESSAGE;
+									//Total message length, message type, username length, username data length, chat message length, chat message data length
+	uint32_t totalMessageByteSize = sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint16_t) + usernameLength + sizeof(uint32_t) + chatMessageLength;
+
+
 
 	char* data = (char*)malloc(totalMessageByteSize);
 	char terminator = '\0';
 
+	uint32_t runningOffset = 0;
+
 	memcpy(data, &totalMessageByteSize, sizeof(uint32_t)); //Total message length
-	memcpy(data + 4, &messageType, sizeof(uint16_t)); //message type
-	memcpy(data + 6, &chatMessageLength, sizeof(uint32_t)); //chat message length
-	memcpy(data + 10, currentMessage.c_str(), currentMessage.size());
-	memcpy(data + 10 + currentMessage.size(), &terminator, 1);
+	runningOffset += sizeof(uint32_t);
+
+	memcpy(data + runningOffset, &messageType, sizeof(uint16_t)); //message type
+	runningOffset += sizeof(uint16_t);
+
+	memcpy(data + runningOffset, &usernameLength, sizeof(uint16_t));
+	runningOffset += sizeof(uint16_t);
+
+	memcpy(data + runningOffset, networkData->username.c_str(), networkData->username.size());
+	runningOffset += networkData->username.size();
+
+	memcpy(data + runningOffset, &terminator, 1);
+	runningOffset += 1;
+
+
+	memcpy(data + runningOffset, &chatMessageLength, sizeof(uint32_t)); //chat message length
+	runningOffset += sizeof(uint32_t);
+
+	memcpy(data + runningOffset, currentMessage.c_str(), currentMessage.size());
+	runningOffset += currentMessage.size();
+
+	memcpy(data + runningOffset, &terminator, 1);
+	runningOffset += 1;
 
 	//Create a write buffer and add it to the iobuffer queue
 	NetworkWriteBuffer* networkWriteBuffer = new NetworkWriteBuffer(totalMessageByteSize, data, networkData->ioBuffer->socketHandle, messageType);
