@@ -29,7 +29,7 @@ public:
 
 	void NetworkTellServerThreadUsernameUpdated();
 
-	void ClientSendChatMessage(std::string currentMessage);
+	void ClientThreadSendChatMessage(std::string currentMessage);
 
 };
 

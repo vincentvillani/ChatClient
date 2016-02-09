@@ -44,12 +44,13 @@ static void DoAllWork(ClientData* clientData, MasterMailbox* mailbox)
 void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 {
 
-	UISetup(clientData);
+	//UISetup(clientData);
 
-	UIDraw(clientData);
+	//UIDraw(clientData);
 
 	//while(1);
 
+	mailbox->ClientThreadSendChatMessage("This is a chat message\n");
 
 	while(true)
 	{
@@ -64,12 +65,12 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 		}
 
 		//Check for user input
-		UIUpdate(clientData, mailbox);
+		//UIUpdate(clientData, mailbox);
 	}
 
 
 
-	UIShutdown();
+	//UIShutdown();
 
 }
 

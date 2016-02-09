@@ -106,11 +106,11 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 	}
 	else if(key == KEY_ENTER || key == '\n')
 	{
-		mailbox->ClientSendChatMessage(clientdata->chatData.currentMessage); //Notify the network thread that we want to send a message
+		mailbox->ClientThreadSendChatMessage(clientdata->chatData.currentMessage); //Notify the network thread that we want to send a message
 		clientdata->chatData.currentMessage.clear(); //Clear the string
 		UIDraw(clientdata);
 	}
-	else if(key == KEY_BACKSPACE) //This is a 'current message' character
+	else if(key == KEY_BACKSPACE || key == KEY_DL) //This is a 'current message' character
 	{
 		if(clientdata->chatData.currentMessage.size())
 		{

@@ -16,7 +16,7 @@
 #include "MasterMailbox.h"
 
 //TODO: Handle partial sends and receives
-//TODO: Alert the main thread when an error on read or write have been
+//TODO: Alert the main thread when an error on read or write have occured
 //TODO: Improve the way data is sent and received from the server
 
 
@@ -32,12 +32,13 @@ int main(int argc, const char* argv[])
 	ClientData* clientData = new ClientData(argv[2]);
 	NetworkData* networkData = new NetworkData(argv[2]);
 
+
 	MasterMailbox* masterMailbox = new MasterMailbox(clientData, networkData);
 
 
 	//Start the networking thread
-	//std::thread networkingThread(NetworkThreadMain, networkData, masterMailbox, argv[1]);
-	//networkingThread.detach();
+	std::thread networkingThread(NetworkThreadMain, networkData, masterMailbox, argv[1]);
+	networkingThread.detach();
 
 	ClientThreadMain(clientData, masterMailbox);
 

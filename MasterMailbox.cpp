@@ -33,7 +33,7 @@ void MasterMailbox::NetworkTellServerThreadUsernameUpdated()
 }
 
 
-void MasterMailbox::ClientSendChatMessage(std::string currentMessage)
+void MasterMailbox::ClientThreadSendChatMessage(std::string currentMessage)
 {
 	std::function<void()> functor = std::function<void()>(std::bind(NetworkThreadSendChatMessage, _networkData, currentMessage));
 	{
