@@ -21,7 +21,20 @@
 static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, const char* ip);
 
 static void PollSocketsAndDoIO(NetworkData* networkData, MasterMailbox* masterMailbox);
+
+
 static void PerformPendingWrites(NetworkData* networkData, MasterMailbox* masterMailbox);
+static void PerformPendingReads(NetworkData* networkData, MasterMailbox* masterMailbox);
+
+
+static void TryProcessReadBuffer(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
+static void ReadBufferToNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
+
+
+static void ProcessUsernameChangedNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
+static void ProcessChatMessageNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
+
+static void ShiftReadBufferData(NetworkReadBuffer* readBuffer);
 
 static void TellClientMessageSent(uint16_t messageType, MasterMailbox* mailbox);
 
@@ -149,7 +162,7 @@ void PollSocketsAndDoIO(NetworkData* networkData, MasterMailbox* masterMailbox)
 	if(pollStructs[0].revents & POLLIN)
 	{
 		//Do a read
-		//TODO: IMPLEMENT THIS
+		PerformPendingReads(networkData, masterMailbox);
 	}
 
 	//Is the socket ready for a write?
@@ -160,6 +173,56 @@ void PollSocketsAndDoIO(NetworkData* networkData, MasterMailbox* masterMailbox)
 	}
 
 }
+
+void PerformPendingReads(NetworkData* networkData, MasterMailbox* masterMailbox)
+{
+	int returnValue;
+
+	//bool connectionWillClose = false;
+
+	NetworkReadBuffer* readBuffer = networkData->ioBuffer->readBuffer;
+
+	//Read as much data as we can
+	while(true)
+	{
+		//Make sure there is enough space to store new data
+		if(readBuffer->remainingStorageCapacity() == 0)
+			readBuffer->grow();
+
+		//Read the socket
+		returnValue = NetworkSocketReceive(networkData->serverSocket->handle, readBuffer->data + readBuffer->bytesRead,
+				readBuffer->remainingStorageCapacity(), 0);
+
+		//Can't read anymore
+		if(returnValue == -1)
+		{
+			break;
+		}
+		//Connection was closed by the client
+		else if(returnValue == 0)
+		{
+			//connectionWillClose = true;
+			break;
+		}
+		//We must have read some data
+		else
+		{
+			readBuffer->bytesRead += returnValue;
+		}
+	}
+
+	//See if there is a whole message ready, process and send it off to the server
+	TryProcessReadBuffer(networkData, masterMailbox, readBuffer, networkData->serverSocket->handle);
+
+	//TODO: Handle a server disconnect?
+
+	//If connection will close, close it
+	//if(connectionWillClose)
+	//	RemoveSocketFromMap(networkData, masterMailbox, socketBuffer->socketHandle);
+}
+
+
+
 
 void PerformPendingWrites(NetworkData* networkData, MasterMailbox* masterMailbox)
 {
@@ -194,6 +257,118 @@ void PerformPendingWrites(NetworkData* networkData, MasterMailbox* masterMailbox
 }
 
 
+void TryProcessReadBuffer(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle)
+{
+	while(true)
+	{
+		//Check each time through the loop if there is enough data to process the next message
+		if(readBuffer->currentMessageSize == 0 && readBuffer->bytesRead < 4)
+			break;
+
+		//Are we not currently waiting for a whole message and have enough data to know the length of the next message?
+		if(readBuffer->currentMessageSize == 0 && readBuffer->bytesRead >= 4)
+		{
+			readBuffer->currentMessageSize = *((uint32_t*)readBuffer->data);
+		}
+
+
+		//At this point we should know the length of the next message
+
+		//Do we have enough to process it?
+		if(readBuffer->currentMessageSize <= readBuffer->bytesRead)
+		{
+			//Process it
+			ReadBufferToNetworkCommand(networkData, masterMailbox, readBuffer, socketHandle);
+		}
+		else //Can't do anymore, break
+			break;
+	}
+}
+
+
+void ReadBufferToNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle)
+{
+
+	uint16_t messageType = *(uint16_t*)(readBuffer->data + 4);
+
+	//TODO: Actually implement this
+	//TODO: UPDATE THE FIELDS ON THE READ BUFFER SO THAT TryProcessReadBuffer HAS UPDATED VALUES IF SOMETHING IS DONE
+	//What is the message type
+	switch(messageType)
+	{
+		case NETWORK_USERNAME:
+			//TODO: Implement this
+			//ProcessUsernameChangedNetworkCommand(networkData, masterMailbox, readBuffer, socketHandle);
+			break;
+
+		case NETWORK_CHAT_MESSAGE:
+			ProcessChatMessageNetworkCommand(networkData, masterMailbox, readBuffer, socketHandle);
+			break;
+
+		case NETWORK_UNSET:
+			break;
+
+		default:
+			fprintf(stderr, "ReadBufferToNetworkCommand: Received a network message type that is unset\n");
+			break;
+
+	}
+
+
+}
+
+
+/*
+void ProcessUsernameChangedNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle)
+{
+	//uint8_t usernameLength = (uint8_t)(readBuffer->data + 6);
+
+	//4 + 2 + 1 byte, ONLY WORKS IF C STRING IS NULL TERMINATED!
+	std::string* username = new std::string(readBuffer->data + 7);
+
+	//printf("Username: %s", username->c_str());
+
+	//Send the data over to the server thread
+	masterMailbox->NetworkThreadUserLoginToServerThread(username, socketHandle);
+
+
+	//Shift the readBuffer data across
+	ShiftReadBufferData(readBuffer);
+}
+*/
+
+void ProcessChatMessageNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle)
+{
+	uint16_t usernameByteOffsetLength = *(uint16_t*)(readBuffer->data + 6);
+
+	//Assumes the username is null terminated
+	std::string username(readBuffer->data + 8);
+
+	//4 + 2 + 2 + usernameDataLength + 4
+	uint32_t chatMessageByteOffset = 12 + usernameByteOffsetLength; //4 + 2 + 4
+
+	//Assumes the C String is NULL terminated
+	std::string chatMessage(readBuffer->data + chatMessageByteOffset);
+
+	//Send the data over to the client thread
+	masterMailbox->NetworkThreadChatMessageReceived(username, chatMessage);
+
+	//Shift the readBuffer across
+	ShiftReadBufferData(readBuffer);
+}
+
+
+
+void ShiftReadBufferData(NetworkReadBuffer* readBuffer)
+{
+	//printf("%d", *(uint16_t*)(readBuffer->data + 19));
+	//Move the data across
+	memmove(readBuffer->data, readBuffer->data + readBuffer->currentMessageSize, readBuffer->bytesRead - readBuffer->currentMessageSize);
+
+	//Update the buffer fields
+	readBuffer->bytesRead -= readBuffer->currentMessageSize;
+	readBuffer->currentMessageSize = 0;
+}
 
 
 void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const char* ip)

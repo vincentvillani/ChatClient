@@ -31,6 +31,8 @@ public:
 
 	void ClientThreadSendChatMessage(std::string currentMessage);
 
+	void NetworkThreadChatMessageReceived(std::string username, std::string chatMessage);
+
 };
 
 #endif /* MASTERMAILBOX_H_ */

@@ -51,7 +51,10 @@ void UISetup(ClientData* clientdata)
 	//Is a macro so just pass by value
 	getmaxyx(stdscr, clientdata->chatData.maxRow, clientdata->chatData.maxCol);
 
+	move(clientdata->chatData.maxRow - 1, clientdata->chatData.maxCol - 1);
 
+
+	/*
 	//TODO: Debug, remove this
 	std::stringstream ss;
 
@@ -66,7 +69,7 @@ void UISetup(ClientData* clientdata)
 
 		ss.str(""); //Clear the SS
 	}
-
+	*/
 
 	//clientdata->chatData.currentMessage = "$|";
 	//clientdata->chatData.currentMessage = "Vincent:y8RkQ2m8PADX5H9qgxKy2twqCHGU1vCO0p3kmktJkpmQ43nkY8DeJ5mV8IgOCS4BHrjFp6EbU0npaO2yUnKu577hfYMcxZDSrDhMF44DbYspQIKrSShJ2BqSEUsEBEoNxDrUodZmwzqUH7CE4gvPuxNfKdWw hello";
@@ -106,11 +109,18 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 	}
 	else if(key == KEY_ENTER || key == '\n')
 	{
-		mailbox->ClientThreadSendChatMessage(clientdata->chatData.currentMessage); //Notify the network thread that we want to send a message
+		//Add the current message to the local queue
+		UIMessage* messageData = new UIMessage(clientdata->username, clientdata->chatData.currentMessage);
+		UIAddMessage(clientdata, messageData);
+
+		//Notify the network thread that we want to send a message
+		mailbox->ClientThreadSendChatMessage(clientdata->chatData.currentMessage);
 		clientdata->chatData.currentMessage.clear(); //Clear the string
+
+		//Redraw
 		UIDraw(clientdata);
 	}
-	else if(key == KEY_BACKSPACE || key == KEY_DL) //This is a 'current message' character
+	else if(key == KEY_BACKSPACE) //|| key == KEY_DL) //This is a 'current message' character
 	{
 		if(clientdata->chatData.currentMessage.size())
 		{
@@ -197,6 +207,8 @@ void UIDraw(ClientData* clientdata)
 	//We don't have any more space to draw, or there are no messages to print
 	if(drawingRowsUsed >= cd->maxRow)
 	{
+		//Move the curser to the char past the last one in the current string message
+		move(cd->maxRow - 1, (cd->currentMessage.size() % cd->maxCol));
 		refresh();
 		return;
 	}
@@ -254,6 +266,8 @@ void UIDraw(ClientData* clientdata)
 	{
 		//fprintf(stdout, "We can't find the current message!\n");
 
+		//Move the curser to the char past the last one in the current string message
+		move(cd->maxRow - 1, (cd->currentMessage.size() % cd->maxCol));
 		refresh();
 		return;
 	}

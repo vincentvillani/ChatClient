@@ -44,3 +44,16 @@ void MasterMailbox::ClientThreadSendChatMessage(std::string currentMessage)
 	_networkData->conditionVariable.notify_one();
 }
 
+
+void MasterMailbox::NetworkThreadChatMessageReceived(std::string username, std::string chatMessage)
+{
+	std::function<void()> functor = std::function<void()>(std::bind(ClientHandleChatMessageReceived, _clientData, username, chatMessage));
+
+	{
+		std::lock_guard<std::mutex> workQueueLock(_clientData->mutex);
+		_clientData->workQueue.push(functor);
+	}
+
+	_clientData->conditionVariable.notify_one();
+}
+
