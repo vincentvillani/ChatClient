@@ -15,7 +15,7 @@
 
 //UI
 //---------------------
-void UISetup(ClientData* clientdata);
+void UISetup(ClientData* clientdata, MasterMailbox* mailbox);
 void UIShutdown();
 
 void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox);
@@ -23,6 +23,8 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox);
 void UIAddMessage(ClientData* clientdata, UIMessage* newMessage);
 
 void UIDraw(ClientData* clientdata);
+
+void UIResize(ClientData* clientdata, MasterMailbox* mailbox);
 
 
 

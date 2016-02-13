@@ -33,6 +33,20 @@ void MasterMailbox::NetworkTellServerThreadUsernameUpdated()
 }
 
 
+void MasterMailbox::ClientThreadUIShouldResize()
+{
+	std::function<void()> functor = std::function<void()>(std::bind(ClientHandleTerminalResize, _clientData, this));
+
+	{
+		std::lock_guard<std::mutex> workQueueLock(_clientData->mutex);
+		_clientData->workQueue.push(functor);
+
+	}
+
+	_clientData->conditionVariable.notify_one();
+}
+
+
 void MasterMailbox::ClientThreadSendChatMessage(std::string currentMessage)
 {
 	std::function<void()> functor = std::function<void()>(std::bind(NetworkThreadSendChatMessage, _networkData, currentMessage));

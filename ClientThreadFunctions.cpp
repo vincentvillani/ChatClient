@@ -16,6 +16,7 @@
 #include <chrono>
 #include <functional>
 #include <ncurses.h>
+#include <signal.h>
 
 
 #include <string.h>
@@ -45,7 +46,7 @@ static void DoAllWork(ClientData* clientData, MasterMailbox* mailbox)
 void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 {
 
-	UISetup(clientData);
+	UISetup(clientData, mailbox);
 
 	UIDraw(clientData);
 
@@ -70,6 +71,12 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 
 	UIShutdown();
 
+}
+
+
+void ClientHandleTerminalResize(ClientData* clientData, MasterMailbox* mailbox)
+{
+	UIResize(clientData, mailbox);
 }
 
 
@@ -150,5 +157,11 @@ void ClientHandleFailedReconnect(ClientData* clientData)
 	timeout(0);
 
 
+}
+
+
+void TerminalResizeHandler(MasterMailbox* mailbox, int sig)
+{
+	mailbox->ClientThreadUIShouldResize();
 }
 

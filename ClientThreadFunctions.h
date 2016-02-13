@@ -17,12 +17,17 @@ class MasterMailbox;
 
 void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox);
 
+void ClientHandleTerminalResize(ClientData* clientData, MasterMailbox* mailbox);
+
 void ClientHandleUsernameChanged(ClientData* clientData);
 void ClientHandleChatMessageReceived(ClientData* clientData, std::string username, std::string chatMessage);
 
 void ClientHandleFailedToConnect(ClientData* clientData);
 void ClientHandleDisconnect(ClientData* clientData);
 void ClientHandleFailedReconnect(ClientData* clientData);
+
+
+void TerminalResizeHandler(MasterMailbox* mailbox, int sig);
 
 
 #endif /* CLIENTTHREADFUNCTIONS_H_ */
