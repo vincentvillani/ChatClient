@@ -287,7 +287,7 @@ void UIDraw(ClientData* clientdata)
 			currentMessageIndex -= 1;
 
 			//For the space between different messages
-			drawingRowsUsed += 1;
+			//drawingRowsUsed += 1;
 
 			//We have run out of messages
 			if(currentMessageIndex < 0)
