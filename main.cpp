@@ -28,7 +28,7 @@ int main(int argc, const char* argv[])
 {
 	if(argc < 2)
 	{
-		printf("Usage: Username\n");
+		fprintf(stderr ,"Please provide a username when starting the program!\nEG: ChatClient YourUsername\n");
 		exit(1);
 	}
 
