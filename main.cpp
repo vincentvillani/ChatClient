@@ -34,7 +34,7 @@ int main(int argc, const char* argv[])
 	}
 
 
-	const char* serverAddress = "Vincent-PC";
+	const char* serverAddress = "Vincents-MBP.home.gateway";
 
 	ClientData* clientData = new ClientData(argv[1]);
 	NetworkData* networkData = new NetworkData(serverAddress, argv[1]);

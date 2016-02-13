@@ -91,6 +91,7 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 
 	int key = getch();
 
+
 	if(key == -1)
 		return;
 	else if(key == KEY_UP)
@@ -124,7 +125,7 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 		//Redraw
 		UIDraw(clientdata);
 	}
-	else if(key == KEY_BACKSPACE) //|| key == KEY_DL) //This is a 'current message' character
+	else if(key == KEY_BACKSPACE || key == KEY_DC || key == KEY_DL || key == 127) //This is a 'current message' character
 	{
 		if(clientdata->chatData.currentMessage.size())
 		{
