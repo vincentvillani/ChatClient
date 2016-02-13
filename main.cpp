@@ -18,7 +18,6 @@
 
 //TODO: Enter username on startup
 //TODO: Auto connect to server without providing address
-//TODO: Test on OSX
 //TODO: Add commands to see current connected users, exit the program, other useful stuff?
 
 
@@ -34,7 +33,7 @@ int main(int argc, const char* argv[])
 	}
 
 
-	const char* serverAddress = "Vincents-MBP.home.gateway";
+	const char* serverAddress = "62.210.115.135";
 
 	ClientData* clientData = new ClientData(argv[1]);
 	NetworkData* networkData = new NetworkData(serverAddress, argv[1]);
