@@ -17,6 +17,7 @@
 ClientData::ClientData(std::string username)
 {
 	this->username = username;
+	this->clientThreadShouldContinue = true;
 }
 
 ClientData::~ClientData()

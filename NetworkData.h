@@ -21,12 +21,16 @@ class NetworkData : public WorkQueue
 
 public:
 
+	const char* serverAddress;
+
 	std::string username;
 	Socket* serverSocket;
 	NetworkReadWriteBuffer* ioBuffer;
 	PollArray* pollArray;
 
-	NetworkData(std::string username);
+	bool networkThreadShouldContinue;
+
+	NetworkData(const char* serverAddress, std::string username);
 	virtual ~NetworkData();
 };
 

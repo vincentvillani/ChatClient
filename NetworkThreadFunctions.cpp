@@ -14,11 +14,13 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <chrono>
+#include <thread>
 
 #define SERVER_PORT_STRING "3490"
 
 
-static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, const char* ip);
+static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox);
 
 static void PollSocketsAndDoIO(NetworkData* networkData, MasterMailbox* masterMailbox);
 
@@ -40,7 +42,7 @@ static void TellClientMessageSent(uint16_t messageType, MasterMailbox* mailbox);
 
 
 
-static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, const char* ip)
+static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox)
 {
 	networkData->serverSocket = NULL;
 
@@ -58,7 +60,7 @@ static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, co
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	returnValue = NetworkGetAddressInfo(ip, SERVER_PORT_STRING, &hints, &addressResults);
+	returnValue = NetworkGetAddressInfo(networkData->serverAddress, SERVER_PORT_STRING, &hints, &addressResults);
 
 	if(returnValue < 0)
 	{
@@ -91,7 +93,7 @@ static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, co
 		//Unsuccessfully connected
 		if(returnValue == -1)
 		{
-			printf("Unsuccessfully connected to socket\n");
+			//printf("Unsuccessfully connected to socket\n");
 			continue;
 		}
 
@@ -99,14 +101,19 @@ static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, co
 		break;
 	}
 
+	freeaddrinfo(addressResults);
+
 	//We have unsuccessfully connected to the server
 	if(currentAddressInfo == NULL)
 	{
-		fprintf(stderr, "Unable to connect to the server\n");
-		exit(1);
+		networkData->networkThreadShouldContinue = false;
+
+		//fprintf(stderr, "Unable to connect to the server\n");
+		return;
+		//exit(1);
 	}
 
-	freeaddrinfo(addressResults);
+
 
 	networkData->serverSocket = new Socket(serverSocketHandle, currentAddressInfo->ai_addr);
 
@@ -127,8 +134,6 @@ static void ConnectToServer(NetworkData* networkData, MasterMailbox* mailbox, co
 
 void PollSocketsAndDoIO(NetworkData* networkData, MasterMailbox* masterMailbox)
 {
-
-
 
 	//Get the total number of client sockets and see if there is any data waiting on them
 	POLLFD* pollStructs = networkData->pollArray->getArrayWithSize(1);
@@ -204,8 +209,21 @@ void PerformPendingReads(NetworkData* networkData, MasterMailbox* masterMailbox)
 			//Close the socket
 			NetworkSocketClose(networkData->serverSocket->handle);
 
-			//Try to reconnect? or write to the console?
+			//Alert the user
+			masterMailbox->NetworkThreadDisconnectOccured();
 
+			//Wait for a bit, then try to reconnect
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+			ConnectToServer(networkData, masterMailbox);
+
+			//We were unable to connect
+			if(networkData->networkThreadShouldContinue == false)
+			{
+				//Send a message to the UI thread and tell it to shut down
+				masterMailbox->NetworkThreadUnableToReconnect();
+
+				return;
+			}
 
 			break;
 		}
@@ -219,11 +237,6 @@ void PerformPendingReads(NetworkData* networkData, MasterMailbox* masterMailbox)
 	//See if there is a whole message ready, process and send it off to the server
 	TryProcessReadBuffer(networkData, masterMailbox, readBuffer, networkData->serverSocket->handle);
 
-	//TODO: Handle a server disconnect?
-
-	//If connection will close, close it
-	//if(connectionWillClose)
-	//	RemoveSocketFromMap(networkData, masterMailbox, socketBuffer->socketHandle);
 }
 
 
@@ -374,11 +387,19 @@ void ShiftReadBufferData(NetworkReadBuffer* readBuffer)
 }
 
 
-void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const char* ip)
+void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox)
 {
-	ConnectToServer(networkData, mailbox, ip);
+	//Setup
+	ConnectToServer(networkData, mailbox);
 
-	while(true)
+	//We failed to connect
+	if(networkData->networkThreadShouldContinue == false)
+	{
+		mailbox->NetworkThreadFailedToConnectToServer();
+	}
+
+
+	while(networkData->networkThreadShouldContinue)
 	{
 
 		std::unique_lock<std::mutex> workQueueLock(networkData->mutex);

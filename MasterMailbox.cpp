@@ -36,12 +36,53 @@ void MasterMailbox::NetworkTellServerThreadUsernameUpdated()
 void MasterMailbox::ClientThreadSendChatMessage(std::string currentMessage)
 {
 	std::function<void()> functor = std::function<void()>(std::bind(NetworkThreadSendChatMessage, _networkData, currentMessage));
+
 	{
 		std::lock_guard<std::mutex> workQueueLock(_networkData->mutex);
 		_networkData->workQueue.push(functor);
 	}
 
 	_networkData->conditionVariable.notify_one();
+}
+
+
+
+void MasterMailbox::NetworkThreadFailedToConnectToServer()
+{
+	std::function<void()> functor = std::function<void()>(std::bind(ClientHandleFailedToConnect, _clientData));
+
+	{
+		std::lock_guard<std::mutex> workQueueLock(_clientData->mutex);
+		_clientData->workQueue.push(functor);
+	}
+
+	_clientData->conditionVariable.notify_one();
+}
+
+
+void MasterMailbox::NetworkThreadDisconnectOccured()
+{
+	std::function<void()> functor = std::function<void()>(std::bind(ClientHandleDisconnect, _clientData));
+
+	{
+		std::lock_guard<std::mutex> workQueueLock(_clientData->mutex);
+		_clientData->workQueue.push(functor);
+	}
+
+	_clientData->conditionVariable.notify_one();
+}
+
+
+void MasterMailbox::NetworkThreadUnableToReconnect()
+{
+	std::function<void()> functor = std::function<void()>(std::bind(ClientHandleFailedReconnect, _clientData));
+
+	{
+		std::lock_guard<std::mutex> workQueueLock(_clientData->mutex);
+		_clientData->workQueue.push(functor);
+	}
+
+	_clientData->conditionVariable.notify_one();
 }
 
 

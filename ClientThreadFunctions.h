@@ -20,5 +20,9 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox);
 void ClientHandleUsernameChanged(ClientData* clientData);
 void ClientHandleChatMessageReceived(ClientData* clientData, std::string username, std::string chatMessage);
 
+void ClientHandleFailedToConnect(ClientData* clientData);
+void ClientHandleDisconnect(ClientData* clientData);
+void ClientHandleFailedReconnect(ClientData* clientData);
+
 
 #endif /* CLIENTTHREADFUNCTIONS_H_ */

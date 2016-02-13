@@ -15,6 +15,7 @@
 #include <string.h>
 #include <chrono>
 #include <functional>
+#include <ncurses.h>
 
 
 #include <string.h>
@@ -49,7 +50,7 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 	UIDraw(clientData);
 
 
-	while(true)
+	while(clientData->clientThreadShouldContinue)
 	{
 		std::unique_lock<std::mutex> workQueueLock(clientData->mutex);
 
@@ -86,3 +87,68 @@ void ClientHandleChatMessageReceived(ClientData* clientData, std::string usernam
 	UIAddMessage(clientData, newMessage);
 	UIDraw(clientData);
 }
+
+
+
+void ClientHandleFailedToConnect(ClientData* clientData)
+{
+	std::string username = "Notification";
+
+	std::string message = "Unable to connect to the server. Please try to connect later. Press any key to exit the program...";
+
+	UIMessage* newMessage = new UIMessage(username, message);
+
+	UIAddMessage(clientData, newMessage);
+	UIDraw(clientData);
+
+	//Shutdown the thread
+	clientData->clientThreadShouldContinue = false;
+
+	//Wait indefinetly
+	timeout(-1);
+
+	//wait for any key to be pressed
+	getch();
+
+	//Don't block for the next update call, so the program can exit <- Could just move the work UIUpdate call to above the work item queue calls
+	timeout(0);
+}
+
+
+void ClientHandleDisconnect(ClientData* clientData)
+{
+	std::string username = "Notification";
+	std::string message = "You have been disconnected from the server. Attempting to reconnect...";
+
+	UIMessage* newMessage = new UIMessage(username, message);
+
+	UIAddMessage(clientData, newMessage);
+	UIDraw(clientData);
+}
+
+
+void ClientHandleFailedReconnect(ClientData* clientData)
+{
+	std::string username = "Notification";
+	std::string message = "Unable to reconnect to the server. Please try to reconnect later. Press any key to exit the program...";
+
+	UIMessage* newMessage = new UIMessage(username, message);
+
+	UIAddMessage(clientData, newMessage);
+	UIDraw(clientData);
+
+	//Shutdown the thread
+	clientData->clientThreadShouldContinue = false;
+
+	//Wait indefinetly
+	timeout(-1);
+
+	//wait for any key to be pressed
+	getch();
+
+	//Don't block for the next update call, so the program can exit <- Could just move the work UIUpdate call to above the work item queue calls
+	timeout(0);
+
+
+}
+

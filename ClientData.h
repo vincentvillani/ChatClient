@@ -19,6 +19,7 @@ class ClientData : public WorkQueue
 
 public:
 
+	bool clientThreadShouldContinue;
 	std::string username;
 
 	ClientData(std::string username);

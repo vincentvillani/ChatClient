@@ -31,6 +31,10 @@ public:
 
 	void ClientThreadSendChatMessage(std::string currentMessage);
 
+	void NetworkThreadFailedToConnectToServer();
+	void NetworkThreadDisconnectOccured();
+	void NetworkThreadUnableToReconnect(); //Unable to reconnect to the server so shut down the program
+
 	void NetworkThreadChatMessageReceived(std::string username, std::string chatMessage);
 
 };

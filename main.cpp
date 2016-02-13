@@ -15,27 +15,34 @@
 #include "NetworkData.h"
 #include "MasterMailbox.h"
 
-//TODO: Handle disconnects and try reconnecting if possible
+//TODO: Handle screen resizing
 //TODO: Test on OSX
+//TODO: Add commands to see current connected users, exit the program, other useful stuff?
+//TODO: Auto connect to server without providing address
+
+
 
 //This is the client thread
 int main(int argc, const char* argv[])
 {
-	if(argc < 3)
+	if(argc < 2)
 	{
-		printf("Usage: IPAddress Username\n");
+		printf("Usage: Username\n");
 		exit(1);
 	}
 
-	ClientData* clientData = new ClientData(argv[2]);
-	NetworkData* networkData = new NetworkData(argv[2]);
+
+	const char* serverAddress = "Vincent-PC";
+
+	ClientData* clientData = new ClientData(argv[1]);
+	NetworkData* networkData = new NetworkData(serverAddress, argv[1]);
 
 
 	MasterMailbox* masterMailbox = new MasterMailbox(clientData, networkData);
 
 
 	//Start the networking thread
-	std::thread networkingThread(NetworkThreadMain, networkData, masterMailbox, argv[1]);
+	std::thread networkingThread(NetworkThreadMain, networkData, masterMailbox);
 	networkingThread.detach();
 
 	ClientThreadMain(clientData, masterMailbox);

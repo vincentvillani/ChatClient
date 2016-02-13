@@ -13,7 +13,7 @@
 
 class MasterMailbox;
 
-void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox, const char* ip);
+void NetworkThreadMain(NetworkData* networkData, MasterMailbox* mailbox);
 
 void NetworkThreadSendUsername(NetworkData* networkData, MasterMailbox* mailbox, std::string newUsername);
 

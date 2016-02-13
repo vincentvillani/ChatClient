@@ -7,12 +7,16 @@
 
 #include "NetworkData.h"
 
-NetworkData::NetworkData(std::string username)
+NetworkData::NetworkData(const char* serverAddress, std::string username)
 {
+	this->serverAddress = serverAddress;
+
 	this->username = username;
 	this->serverSocket = NULL;
 	this->ioBuffer = new NetworkReadWriteBuffer(0);
 	this->pollArray = new PollArray();
+
+	this->networkThreadShouldContinue = true;
 }
 
 NetworkData::~NetworkData()
