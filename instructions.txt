@@ -1,0 +1,11 @@
+The binary included in this release will only work for OSX. For linux you'll have to build from source or use a different release.
+
+1. From a terminal/shell run the install.sh bash script as a super user to install the chat client to /usr/local/bin
+
+Eg: sudo bash install.sh
+
+2. Run the program from your terminal/shell. When you run it you need to pass it a username for yourself.
+
+Eg: ChatClient MyUsername
+
+3. Shit talk to your hearts content
