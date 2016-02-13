@@ -15,7 +15,7 @@
 #include "NetworkData.h"
 #include "MasterMailbox.h"
 
-
+//TODO: Handle clients moving to different networks while the program stays open?
 //TODO: Enter username on startup
 //TODO: Add commands to see current connected users, exit the program, other useful stuff?
 
