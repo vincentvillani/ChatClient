@@ -15,12 +15,13 @@
 #include "NetworkData.h"
 #include "MasterMailbox.h"
 
-//TODO: Handle screen resizing
+
 //TODO: Enter username on startup
-//TODO: Test on OSX
-//TODO: Add commands to see current connected users, exit the program, other useful stuff?
 //TODO: Auto connect to server without providing address
 //TODO: Take a look at performance with optimisations on
+//TODO: Test on OSX
+//TODO: Add commands to see current connected users, exit the program, other useful stuff?
+
 
 
 
