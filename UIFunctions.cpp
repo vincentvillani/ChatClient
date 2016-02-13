@@ -16,6 +16,9 @@
 
 #define USERNAME_SPACER_LENGTH 2
 
+#define CHAT_MESSAGES_COLOUR_PAIR 1
+#define CURRENT_MESSAGE_COLOUR_PAIR 2
+
 
 //Private methods
 static void calculateRowsUsedByUIMessage(ClientData* clientData, UIMessage* message)
@@ -38,8 +41,12 @@ void UISetup(ClientData* clientdata)
 	initscr(); //init ncurses
 	start_color(); //init colours
 
-	init_pair(1, COLOR_CYAN, COLOR_BLACK); //Setup the colours
-	attron(COLOR_PAIR(1)); //Turn the colour on
+	//chat messages colour
+	init_pair(CHAT_MESSAGES_COLOUR_PAIR, COLOR_GREEN, COLOR_BLACK); //Setup the colours
+
+	init_pair(CURRENT_MESSAGE_COLOUR_PAIR, COLOR_WHITE, COLOR_BLACK);
+
+	//attron(COLOR_PAIR(CHAT_MESSAGES_COLOUR_PAIR)); //Turn the colour on
 
 	scrollok(stdscr, TRUE); //Make the window scrollabled
 
@@ -170,6 +177,10 @@ void UIDraw(ClientData* clientdata)
 	int messageRowLength = (cd->currentMessage.size() / cd->maxCol) + 1; //+ 1 to account for the extra characters
 	int messageStartRow = cd->maxRow - messageRowLength; //Calculate which row to start drawing the message on
 
+
+	//Change the colour pair to the current message colour
+	attron(COLOR_PAIR(CURRENT_MESSAGE_COLOUR_PAIR));
+
 	//We can't display the whole message
 	if(messageStartRow < 0)
 	{
@@ -221,6 +232,10 @@ void UIDraw(ClientData* clientdata)
 	int currentMessageIndex = cd->messageVector.size() - 1;
 	uint32_t totalRowCount = 0;
 	int localRow = -1; //Row number relative to the upper most row of the current message
+
+
+	//Change to the chat message colour pair
+	attron(COLOR_PAIR(CHAT_MESSAGES_COLOUR_PAIR));
 
 	//Find the first viewable message and which of it's rows is the base row
 	for(; currentMessageIndex >= 0; --currentMessageIndex)
