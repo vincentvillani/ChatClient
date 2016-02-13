@@ -17,7 +17,6 @@
 
 
 //TODO: Enter username on startup
-//TODO: Auto connect to server without providing address
 //TODO: Add commands to see current connected users, exit the program, other useful stuff?
 
 
