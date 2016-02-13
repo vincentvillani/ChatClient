@@ -29,7 +29,7 @@ public:
 
 	void NetworkTellServerThreadUsernameUpdated();
 
-	void ClientThreadUIShouldResize();
+	//void ClientThreadUIShouldResize();
 	void ClientThreadSendChatMessage(std::string currentMessage);
 
 	void NetworkThreadFailedToConnectToServer();

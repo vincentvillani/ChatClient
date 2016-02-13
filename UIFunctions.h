@@ -24,7 +24,7 @@ void UIAddMessage(ClientData* clientdata, UIMessage* newMessage);
 
 void UIDraw(ClientData* clientdata);
 
-void UIResize(ClientData* clientdata, MasterMailbox* mailbox);
+void UIResize(ClientData* clientdata);
 
 
 

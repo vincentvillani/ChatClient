@@ -22,7 +22,7 @@
 
 
 //Private methods
-static void calculateRowsUsedByUIMessage(ClientData* clientData, UIMessage* message)
+static void CalculateRowsUsedByUIMessage(ClientData* clientData, UIMessage* message)
 {
 	//+ 2 for ': ' (the colon and space), + 1 row for integer flooring
 	message->UIRowsUsed = ((message->username.size() + message->message.size() + 2 ) / clientData->chatData.maxCol) + 1;
@@ -31,6 +31,17 @@ static void calculateRowsUsedByUIMessage(ClientData* clientData, UIMessage* mess
 	clientData->chatData.totalMessageRows += message->UIRowsUsed;
 }
 
+static void ResetAndRecalculateRowsUsedByAllUIMessages(ClientData* clientData)
+{
+	//Reset total message rows
+	clientData->chatData.totalMessageRows = 0;
+
+	for(uint32_t i = 0; i < clientData->chatData.messageVector.size(); ++i)
+	{
+		//Recalculate the number of rows used for each message
+		CalculateRowsUsedByUIMessage(clientData, clientData->chatData.messageVector[i]);
+	}
+}
 
 
 
@@ -61,10 +72,12 @@ void UISetup(ClientData* clientdata, MasterMailbox* mailbox)
 
 	move(clientdata->chatData.maxRow - 1, clientdata->chatData.maxCol - 1);
 
+	/*
 	std::function<void(int)> functor = std::bind(TerminalResizeHandler, mailbox, std::placeholders::_1);
 
 	//register the handler for a terminal resize signal
 	signal(SIGWINCH, functor.target<void(int)>());
+	*/
 }
 
 void UIShutdown()
@@ -120,6 +133,10 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 			UIDraw(clientdata);
 		}
 	}
+	else if(key == KEY_RESIZE)
+	{
+		UIResize(clientdata);
+	}
 	else
 	{
 		clientdata->chatData.currentMessage += key;
@@ -135,7 +152,7 @@ void UIUpdate(ClientData* clientdata, MasterMailbox* mailbox)
 void UIAddMessage(ClientData* clientdata, UIMessage* newMessage)
 {
 	clientdata->chatData.messageVector.push_back(newMessage);
-	calculateRowsUsedByUIMessage(clientdata, newMessage);
+	CalculateRowsUsedByUIMessage(clientdata, newMessage);
 
 
 	//Redraw
@@ -324,24 +341,22 @@ void UIDraw(ClientData* clientdata)
 }
 
 
-void UIResize(ClientData* clientdata, MasterMailbox* mailbox)
+void UIResize(ClientData* clientdata)
 {
-	//Shutdown the window
-	endwin();
-
-    // Needs to be called after an endwin() so ncurses will initialize
-    // itself with the new terminal dimensions.
-	refresh();
 	clear();
 
-	//Setup the UI again
-	UISetup(clientdata, mailbox);
+	//Get the max x and y for this screen
+	//Is a macro so just pass by value
+	getmaxyx(stdscr, clientdata->chatData.maxRow, clientdata->chatData.maxCol);
+
+	//Recalculate how many rows are needed to display each message
+	ResetAndRecalculateRowsUsedByAllUIMessages(clientdata);
 
 	//Draw the current content
 	UIDraw(clientdata);
 
-
 }
+
 
 
 

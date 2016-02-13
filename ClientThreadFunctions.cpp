@@ -73,11 +73,12 @@ void ClientThreadMain(ClientData* clientData, MasterMailbox* mailbox)
 
 }
 
-
+/*
 void ClientHandleTerminalResize(ClientData* clientData, MasterMailbox* mailbox)
 {
 	UIResize(clientData, mailbox);
 }
+*/
 
 
 
@@ -159,9 +160,10 @@ void ClientHandleFailedReconnect(ClientData* clientData)
 
 }
 
-
+/*
 void TerminalResizeHandler(MasterMailbox* mailbox, int sig)
 {
 	mailbox->ClientThreadUIShouldResize();
 }
+*/
 
