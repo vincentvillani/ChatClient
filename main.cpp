@@ -15,10 +15,8 @@
 #include "NetworkData.h"
 #include "MasterMailbox.h"
 
-//TODO: Handle partial sends and receives
-//TODO: Alert the main thread when an error on read or write have occured
-//TODO: Improve the way data is sent and received from the server
-
+//TODO: Handle disconnects and try reconnecting if possible
+//TODO: Test on OSX
 
 //This is the client thread
 int main(int argc, const char* argv[])

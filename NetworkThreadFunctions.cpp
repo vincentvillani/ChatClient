@@ -31,7 +31,7 @@ static void TryProcessReadBuffer(NetworkData* networkData, MasterMailbox* master
 static void ReadBufferToNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
 
 
-static void ProcessUsernameChangedNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
+//static void ProcessUsernameChangedNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
 static void ProcessChatMessageNetworkCommand(NetworkData* networkData, MasterMailbox* masterMailbox, NetworkReadBuffer* readBuffer, int socketHandle);
 
 static void ShiftReadBufferData(NetworkReadBuffer* readBuffer);
@@ -198,10 +198,15 @@ void PerformPendingReads(NetworkData* networkData, MasterMailbox* masterMailbox)
 		{
 			break;
 		}
-		//Connection was closed by the client
+		//Connection was closed by the server
 		else if(returnValue == 0)
 		{
-			//connectionWillClose = true;
+			//Close the socket
+			NetworkSocketClose(networkData->serverSocket->handle);
+
+			//Try to reconnect? or write to the console?
+
+
 			break;
 		}
 		//We must have read some data
@@ -291,13 +296,11 @@ void ReadBufferToNetworkCommand(NetworkData* networkData, MasterMailbox* masterM
 
 	uint16_t messageType = *(uint16_t*)(readBuffer->data + 4);
 
-	//TODO: Actually implement this
-	//TODO: UPDATE THE FIELDS ON THE READ BUFFER SO THAT TryProcessReadBuffer HAS UPDATED VALUES IF SOMETHING IS DONE
 	//What is the message type
 	switch(messageType)
 	{
 		case NETWORK_USERNAME:
-			//TODO: Implement this
+			//No need for this for now, usernames are sent along with the messages
 			//ProcessUsernameChangedNetworkCommand(networkData, masterMailbox, readBuffer, socketHandle);
 			break;
 
